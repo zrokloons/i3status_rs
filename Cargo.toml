@@ -1,12 +1,11 @@
 [package]
 name = "i3status_rs"
-version = "0.1.0"
-authors = ["Mathias de Paulis Nilsson <mathias.de.paulis.nilsson@ericsson.com>"]
+version = "0.2.0"
+authors = ["Mathias de Paulis Nilsson <mathias.de.paulis.nilsson@mail.com>"]
 edition = "2018"
 
 [dependencies]
 i3monkit = { git = "https://github.com/zrokloons/i3monkit" }
+jenkins_config = { git = "https://github.com/zrokloons/jenkins_config" }
 jenkins_api = "0.5.2"
-serde = { version = "1.0.90", features = ["derive"] }
-serde_yaml = "0.8.8"
 clap = "2.33.0"

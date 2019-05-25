@@ -1,5 +1,5 @@
 extern crate clap;
-extern crate serde_yaml;
+extern crate jenkins_config;
 mod jenkins;
 
 use i3monkit::*;

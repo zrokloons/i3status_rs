@@ -1,8 +1,8 @@
 use i3monkit::{Block, Widget, WidgetUpdate};
 use jenkins_api::{Jenkins, JenkinsBuilder};
 use jenkins_api::build::{BuildStatus, CommonBuild, ShortBuild};
-use serde::{Deserialize};
-use std::{fs, time};
+use std::{time};
+use jenkins_config::jenkins::{JenkinsConfig};
 
 
 // Struct holding information when building up Pango markup string
@@ -68,50 +68,18 @@ impl PangoMarkup {
     }
 }
 
-
-#[derive(Deserialize)]
-pub struct JenkinsJobs {
-
-    // url of Jenkins instance including port
-    pub jenkins: String,
-
-    // name to be shown in the bar
-    pub name: String,
-
-    // list of names of jobs that should be tracked
-    pub jobs: Vec<String>,
-}
-
-#[derive(Deserialize)]
 pub struct JenkinsWidget {
 
-    // List of Jenkins jobs
-    jobs: Vec<JenkinsJobs>,
-
-    // Update frequency (seconds)
-    update_frequency: u64,
+    // This field reference the Jenkins config
+    jenkins: JenkinsConfig,
 }
 
 impl JenkinsWidget {
 
     // Create a JenkinsWidget struct
-    pub fn new(path: &str) -> JenkinsWidget {
+    pub(crate) fn new(path: &str) -> JenkinsWidget {
 
-        // Read the config into a String
-        let data = match fs::read_to_string(&path) {
-            Ok(data) => data,
-            Err(error) => {
-                panic!("Error reading file: {}, {}", path, error);
-            },
-        };
-
-        // deserialize contents into JenkinsWidget struct
-        match serde_yaml::from_str(&data) {
-            Ok(jenkins_widget) => jenkins_widget,
-            Err(error) => {
-                panic!("Error deserialize config: {}, {}", path, error);
-            },
-        }
+        JenkinsWidget { jenkins: JenkinsConfig::new(path) }
     }
 
     // Get the last build of a given job on a Jenkins instance. If job is not
@@ -148,7 +116,7 @@ impl Widget for JenkinsWidget {
     fn update(&mut self) -> Option<WidgetUpdate> {
         let mut data = Vec::new();
 
-        for tracked in &self.jobs {
+        for tracked in &self.jenkins.jobs {
             let mut connected:bool = false;
             let mut extra = Vec::new();
 
@@ -219,9 +187,11 @@ impl Widget for JenkinsWidget {
 
         block.use_pango();
 
-        Some(WidgetUpdate{
-            refresh_interval: time::Duration::new(self.update_frequency, 0),
-            data: Some(block)
-        })
+        Some(WidgetUpdate {
+            refresh_interval: time::Duration::new(
+                                  self.jenkins.update_frequency, 0),
+                                  data: Some(block)
+            }
+        )
     }
 }
